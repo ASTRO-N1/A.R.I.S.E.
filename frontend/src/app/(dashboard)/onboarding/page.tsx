@@ -55,6 +55,7 @@ export default function OnboardingChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
+  const startTimeRef = useRef<number>(0);
 
   // Initial greeting
   useEffect(() => {
@@ -77,6 +78,8 @@ export default function OnboardingChat() {
   }, [messages, isTyping]);
 
   const toggleRecording = async () => {
+    if (isTyping) return; // Prevent interaction while AI is responding
+
     if (isRecording) {
       if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
         mediaRecorderRef.current.stop();
@@ -90,6 +93,7 @@ export default function OnboardingChat() {
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
+      startTimeRef.current = Date.now();
 
       mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) {
@@ -98,6 +102,17 @@ export default function OnboardingChat() {
       };
 
       mediaRecorder.onstop = () => {
+        const duration = Date.now() - startTimeRef.current;
+        if (duration < 1000) {
+            console.warn(`Recording too short (${duration}ms). Discarding.`);
+            setMessages((prev) => [
+                ...prev,
+                { id: Date.now().toString(), sender: "bot", text: "Recording was too short. Please try speaking a bit longer." }
+            ]);
+            setIsRecording(false);
+            return;
+        }
+
         if (chunksRef.current.length === 0) {
             console.warn("No audio chunks recorded.");
             setIsRecording(false);
@@ -345,7 +360,7 @@ export default function OnboardingChat() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Message ARISE..."
-              disabled={isRecording}
+              disabled={isRecording || isTyping}
               className="w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 rounded-2xl pl-5 pr-24 py-4 focus:outline-none focus:ring-2 focus:ring-black/5 dark:focus:ring-white/10 transition-shadow shadow-sm disabled:opacity-50"
               autoFocus
             />
@@ -353,18 +368,19 @@ export default function OnboardingChat() {
             <button
               type="button"
               onClick={toggleRecording}
+              disabled={isTyping}
               className={`absolute right-14 p-2.5 rounded-xl transition-colors ${
                 isRecording
                   ? "bg-red-500 text-white animate-pulse"
                   : "bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-black dark:hover:text-white"
-              }`}
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               <Mic className="w-4 h-4" />
             </button>
             {/* Send Button */}
             <button
               type="submit"
-              disabled={!input.trim() && !isRecording}
+              disabled={(!input.trim() && !isRecording) || isTyping}
               className="absolute right-2 p-2.5 bg-black dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-white dark:text-black rounded-xl transition-colors"
             >
               <Send className="w-4 h-4" />
