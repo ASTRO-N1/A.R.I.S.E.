@@ -14,7 +14,7 @@ interface ChatMessage {
 }
 
 export default function Dashboard() {
-  const { businessType, clearBusinessType } = useBusinessStore();
+  const { businessType, isOnboardingComplete, clearBusinessType } = useBusinessStore();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [chatInput, setChatInput] = useState("");
@@ -28,12 +28,13 @@ export default function Dashboard() {
 
   useEffect(() => {
     setMounted(true);
-    if (!businessType) {
+    // Only redirect to landing page if there is an explicit lack of business profile or onboarding completion
+    if (!businessType || !isOnboardingComplete) {
       router.push("/");
     }
-  }, [businessType, router]);
+  }, [businessType, isOnboardingComplete, router]);
 
-  if (!mounted || !businessType) return null;
+  if (!mounted || !businessType || !isOnboardingComplete) return null;
 
   const handleReturn = () => {
     clearBusinessType();

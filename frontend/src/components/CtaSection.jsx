@@ -31,7 +31,7 @@ export default function CtaSection() {
                         with the power of AI.
                     </p>
                     <div className="btn-group">
-                        <Link href="/onboarding" className="btn btn--primary" id="cta-launch">
+                        <Link href="/select-business" className="btn btn--primary" id="cta-launch">
                             <RocketIcon size={18} color="var(--bg-void)" />
                             Launch ARISE
                         </Link>

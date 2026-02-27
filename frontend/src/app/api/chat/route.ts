@@ -1,0 +1,114 @@
+import { GoogleGenAI } from "@google/genai";
+import { NextResponse } from "next/server";
+
+// Initialize the Google Gen AI SDK
+// It defaults to process.env.GEMINI_API_KEY
+const ai = new GoogleGenAI({});
+
+export async function POST(req: Request) {
+  try {
+    const { messages, businessType, audioBase64, mimeType } = await req.json();
+
+    if (!messages || !Array.isArray(messages)) {
+      return NextResponse.json({ error: "Invalid messages format" }, { status: 400 });
+    }
+
+    const systemInstruction = `You are ARISE. The user is sending an audio message or text. First, transcribe exactly what they said in their original language (Marathi, Hindi, or English). Then, formulate your expert business response. You MUST return strictly a JSON object in this format: {"transcription": "exact words the user spoke", "replyText": "your response"}. Do not use markdown blocks.\n\nYou are an AI onboarding analyst. The selected business type: ${businessType || 'Retail Store'}. Ask them 4 simple questions, ONE at a time, to understand their inventory needs (e.g., top items, supplier delays, demand spikes, storage limits). Act conversational, professional, and concise. DO NOT ask all questions at once. Once you have asked 4 questions and the user has answered, you MUST output ONLY a valid JSON object in this exact format: {"transcription": "...", "replyText": "...", "status": "COMPLETE", "inventoryData": [{item: "...", stock: 100, price: 50}]}. Do not include markdown tags like \`\`\`json. Just the raw JSON.`;
+
+    const formattedMessages = messages.map((msg: any) => ({
+      role: msg.sender === "bot" ? "model" : "user",
+      parts: [{ text: msg.text || " " }] as any[],
+    }));
+
+    if (audioBase64 && mimeType) {
+        console.log("Audio received: ", !!audioBase64, "MimeType:", mimeType);
+        // Append the audio data to the last user message
+        const lastMsg = formattedMessages[formattedMessages.length - 1];
+        if (lastMsg && lastMsg.role === "user") {
+            lastMsg.parts.push({
+                inlineData: {
+                    data: audioBase64,
+                    mimeType: mimeType
+                }
+            });
+        }
+    } else {
+        console.log("No audio received for this request.");
+    }
+
+    // Step 1: Generate text response (JSON format)
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: formattedMessages,
+      config: {
+        systemInstruction,
+      },
+    });
+    
+    console.log("RAW GEMINI RESPONSE: ", response.text);
+
+    const replyTextRaw = response.text || "{}";
+    let parsedReply: any = {};
+    try {
+        const jsonMatch = replyTextRaw.match(/\{[\s\S]*\}/);
+        parsedReply = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(replyTextRaw);
+    } catch(e) {
+        console.error("Failed to parse Gemini response as JSON", replyTextRaw);
+        parsedReply = { replyText: replyTextRaw, transcription: "" }; 
+    }
+
+    const replyText = parsedReply.replyText || "";
+    const transcription = parsedReply.transcription || "";
+    const isComplete = parsedReply.status === "COMPLETE";
+
+    if (isComplete) {
+       return NextResponse.json({ 
+           reply: replyTextRaw, 
+           transcription, 
+           parsedFull: parsedReply 
+       });
+    }
+
+    // Step 2: Generate Audio for the exact text
+    let outAudioBase64 = null;
+    try {
+      if (replyText) {
+        const audioResponse = await ai.models.generateContent({
+          model: "gemini-2.5-flash-preview-tts",
+          contents: replyText,
+          config: {
+            // @ts-ignore
+            responseModalities: ["AUDIO"],
+            speechConfig: {
+              voiceConfig: {
+                prebuiltVoiceConfig: {
+                  voiceName: "Kore"
+                }
+              }
+            }
+          }
+        });
+
+        const inlineData = audioResponse.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+        if (inlineData) {
+          outAudioBase64 = inlineData.data;
+        }
+      }
+    } catch (e) {
+      console.error("TTS Generation Error:", e);
+    }
+
+    return NextResponse.json({ 
+        reply: replyTextRaw, 
+        transcription, 
+        audioBase64: outAudioBase64,
+        parsedFull: parsedReply
+    });
+  } catch (error: any) {
+    console.error("Gemini API Error:", error);
+    return NextResponse.json(
+      { error: "Failed to generate AI response" },
+      { status: 500 }
+    );
+  }
+}

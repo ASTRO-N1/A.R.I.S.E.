@@ -44,7 +44,7 @@ export default function HeroSection() {
                     </p>
 
                     <div className="btn-group">
-                        <Link href="/onboarding" className="btn btn--primary" id="btn-launch">
+                        <Link href="/select-business" className="btn btn--primary" id="btn-launch">
                             <RocketIcon size={18} color="var(--bg-void)" />
                             Launch ARISE
                         </Link>

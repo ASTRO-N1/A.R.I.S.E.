@@ -60,7 +60,7 @@ export default function Navbar({ scrolled }) {
                 {/* Right side: theme toggle + CTA */}
                 <div className="navbar__actions">
                     <ThemeToggle />
-                    <Link href="/onboarding" className="navbar__cta flex items-center justify-center p-2 rounded-full font-medium" id="nav-cta">Get Started</Link>
+                    <Link href="/select-business" className="navbar__cta flex items-center justify-center p-2 rounded-full font-medium" id="nav-cta">Get Started</Link>
                 </div>
             </nav>
         </header>
