@@ -3,9 +3,10 @@
 import { useEffect, useState, useRef } from "react";
 import { useBusinessStore } from "@/store/useBusinessStore";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, Send, User, ChevronRight, Mic } from "lucide-react";
+import { Bot, Send, User, ChevronRight, Mic, Sparkles } from "lucide-react";
 
 function createWavBlob(base64Data: string) {
   const binaryString = window.atob(base64Data);
@@ -46,7 +47,7 @@ type Message = {
 
 export default function OnboardingChat() {
   const router = useRouter();
-  const businessType = useBusinessStore((state) => state.businessType);
+  const { businessType, onboardingMode, setOnboardingMode } = useBusinessStore();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(true);
@@ -59,10 +60,13 @@ export default function OnboardingChat() {
 
   // Initial greeting
   useEffect(() => {
+    if (!onboardingMode) return; // Wait until they select a mode
+
     const defaultType = businessType || "retail"; // fallback if none selected
     const storeName = typeNames[defaultType] || "Business";
     
-    const initialMsg = `Welcome to ARISE. Let's set up your ${storeName}. What are your main goals for using the dashboard?`;
+    const modeText = onboardingMode === 'quick' ? 'Quick Demo setup' : 'In-Depth setup';
+    const initialMsg = `Welcome to ARISE. Let's start your ${modeText} for your ${storeName}. What are your main goals for using the dashboard?`;
     
     const timer = setTimeout(() => {
       setMessages([{ id: Date.now().toString(), sender: "bot", text: initialMsg }]);
@@ -70,7 +74,7 @@ export default function OnboardingChat() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [businessType]);
+  }, [businessType, onboardingMode]);
 
   // Scroll to bottom
   useEffect(() => {
@@ -169,6 +173,7 @@ export default function OnboardingChat() {
         body: JSON.stringify({
           messages: updatedMessages,
           businessType: typeNames[businessType || "retail"] || "Business",
+          onboardingMode,
           audioBase64,
           mimeType
         }),
@@ -233,7 +238,45 @@ export default function OnboardingChat() {
           }
           useBusinessStore.getState().setOnboardingComplete(true);
           
-          setTimeout(() => {
+          setTimeout(async () => {
+              try {
+                  const supabase = createClient();
+                  const { data: { user } } = await supabase.auth.getUser();
+                  
+                  if (user) {
+                      // Insert Business
+                      const { data: businessRes, error: bErr } = await supabase
+                          .from('businesses')
+                          .insert({
+                              user_id: user.id,
+                              business_type: businessType || 'retail',
+                              onboarding_mode: onboardingMode
+                          })
+                          .select('id')
+                          .single();
+                      
+                      if (bErr) console.error("Business Insert Error:", bErr);
+                          
+                      // Insert Inventory
+                      if (businessRes && inventoryDataToSave) {
+                          const inventoryInserts = inventoryDataToSave.map((item: any) => ({
+                              business_id: businessRes.id,
+                              user_id: user.id,
+                              item_name: item.item,
+                              stock: item.stock,
+                              price: item.price,
+                              restock_time_days: item.restock_time_days || 0,
+                              sales_history: item.sales_history || []
+                          }));
+                          
+                          const { error: iErr } = await supabase.from('inventory').insert(inventoryInserts);
+                          if (iErr) console.error("Inventory Insert Error:", iErr);
+                      }
+                  }
+              } catch (err) {
+                  console.error("DB Sync failed inside timeout", err);
+              }
+              
               router.push("/dashboard");
           }, 5000);
           return;
@@ -285,8 +328,55 @@ export default function OnboardingChat() {
         </div>
       </header>
 
-      {/* Chat Area */}
-      <main className="flex-1 w-full max-w-3xl mx-auto flex flex-col relative z-10 p-4 sm:p-6 mb-24">
+      {/* Main Area */}
+      {!onboardingMode ? (
+        <main className="flex-1 w-full max-w-4xl mx-auto flex flex-col items-center justify-center relative z-10 p-6 mb-24">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-10"
+          >
+            <h2 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white mb-2">Choose your setup mode</h2>
+            <p className="text-gray-500 dark:text-gray-400">Select how you want to configure your ARISE system.</p>
+          </motion.div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+              onClick={() => setOnboardingMode('quick')}
+              className="bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-800 p-8 rounded-3xl shadow-sm hover:shadow-md hover:border-blue-500/30 transition-all cursor-pointer group"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-3">Quick Setup (Demo)</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                AI will generate comprehensive mock sales history based on your top items. Perfect for exploring the dashboard's capabilities quickly.
+              </p>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              onClick={() => setOnboardingMode('in-depth')}
+              className="bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-800 p-8 rounded-3xl shadow-sm hover:shadow-md hover:border-purple-500/30 transition-all cursor-pointer group"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-900/20 text-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <User className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-3">In-Depth Setup</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                Answer detailed questions to input your exact sales history and supplier metrics. Required for using ARISE with real business data.
+              </p>
+            </motion.div>
+          </div>
+        </main>
+      ) : (
+        <>
+          <main className="flex-1 w-full max-w-3xl mx-auto flex flex-col relative z-10 p-4 sm:p-6 mb-24">
         <div className="flex-1 overflow-y-auto space-y-6 pb-4 hide-scrollbar">
           <AnimatePresence initial={false}>
             {messages.map((m) => (
@@ -391,6 +481,8 @@ export default function OnboardingChat() {
           ARISE is setting up your tailored experience. Use your microphone or type your answers.
         </p>
       </div>
+      </>
+      )}
       
       {/* Global styles to hide scrollbar while allowing scroll */}
       <style dangerouslySetInnerHTML={{__html: `

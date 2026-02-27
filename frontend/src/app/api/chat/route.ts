@@ -7,13 +7,18 @@ const ai = new GoogleGenAI({});
 
 export async function POST(req: Request) {
   try {
-    const { messages, businessType, audioBase64, mimeType } = await req.json();
+    const { messages, businessType, onboardingMode, audioBase64, mimeType } = await req.json();
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({ error: "Invalid messages format" }, { status: 400 });
     }
 
-    const systemInstruction = `You are ARISE. The user is sending an audio message or text. First, transcribe exactly what they said in their original language (Marathi, Hindi, or English). Then, formulate your expert business response. You MUST return strictly a JSON object in this format: {"transcription": "exact words the user spoke", "replyText": "your response"}. Do not use markdown blocks.\n\nYou are an AI onboarding analyst. The selected business type: ${businessType || 'Retail Store'}. Ask them 4 simple questions, ONE at a time, to understand their inventory needs (e.g., top items, supplier delays, demand spikes, storage limits). Act conversational, professional, and concise. DO NOT ask all questions at once. Once you have asked 4 questions and the user has answered, you MUST output ONLY a valid JSON object in this exact format: {"transcription": "...", "replyText": "...", "status": "COMPLETE", "inventoryData": [{item: "...", stock: 100, price: 50}]}. Do not include markdown tags like \`\`\`json. Just the raw JSON.`;
+    const mode = onboardingMode || 'quick';
+    const dynamicPrompt = mode === 'quick' 
+      ? `Ask them only 3 simple questions, ONE at a time, to understand their top items. Act conversational, professional, and concise. DO NOT ask all questions at once. Once you have asked 3 questions and the user has answered, you MUST output ONLY a valid JSON object in this exact format: {"transcription": "...", "replyText": "...", "status": "COMPLETE", "inventoryData": [{"item": "Name", "stock": 100, "price": 50.00, "restock_time_days": 5, "sales_history": [{"date": "2026-02-20", "sold": 15}, {"date": "2026-02-21", "sold": 12}]}]}. As part of the COMPLETE response, explicitly hallucinate a mathematically sound 30-day \`sales_history\` (late Jan to late Feb 2026) and realistic \`restock_time_days\` for each generated item.`
+      : `Act as a rigorous data analyst. Ask them 8-10 detailed questions, ONE at a time. Extract exact stock numbers, past month sales trends, and supplier delays from the user before completing. DO NOT ask all questions at once. Once you have rigorously extracted the data and asked all questions, you MUST output ONLY a valid JSON object in this exact format: {"transcription": "...", "replyText": "...", "status": "COMPLETE", "inventoryData": [{"item": "Name", "stock": 100, "price": 50.00, "restock_time_days": 5, "sales_history": [{"date": "2026-02-20", "sold": 15}, {"date": "2026-02-21", "sold": 12}]}]}. Do not hallucinate; use their exact provided metrics.`;
+
+    const systemInstruction = `You are ARISE. The user is sending an audio message or text. First, transcribe exactly what they said in their original language (Marathi, Hindi, or English). Then, formulate your expert business response. You MUST return strictly a JSON object in this format: {"transcription": "exact words the user spoke", "replyText": "your response"}. Do not use markdown blocks.\n\nYou are an AI onboarding analyst. The selected business type: ${businessType || 'Retail Store'}. ${dynamicPrompt} Do not include markdown tags like \`\`\`json. Just the raw JSON.`;
 
     const formattedMessages = messages.map((msg: any) => ({
       role: msg.sender === "bot" ? "model" : "user",
