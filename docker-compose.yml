@@ -1,0 +1,38 @@
+# ──────────────────────────────────────────────
+# ARISE — Docker Compose (Backend + Frontend)
+# ──────────────────────────────────────────────
+# Usage:
+#   docker-compose up --build        → build & start both services
+#   docker-compose up -d             → run in background
+#   docker-compose down              → stop all services
+# ──────────────────────────────────────────────
+
+services:
+  # ── Flask Backend ──
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: arise-backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ── React + Vite Frontend (served via Nginx) ──
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: arise-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
