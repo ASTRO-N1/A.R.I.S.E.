@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  :root {
+    /* Pure white background, hyper-modern minimalist approach */
+    --background: #ffffff;
+    --foreground: #111827; /* gray-900 */
+    
+    /* Vercel/Linear style crisp black/white accents */
+    --primary: #000000;
+    --primary-foreground: #ffffff;
+    
+    --secondary: #f9fafb; /* gray-50 */
+    --secondary-foreground: #4b5563; /* gray-600 */
+    
+    --accent: #f3f4f6; /* gray-100 */
+    --accent-foreground: #111827;
+    
+    --border: #e5e7eb; /* gray-200 */
+    --ring: #d1d5db; /* gray-300 */
+  }
+
+  .dark {
+    /* Kept structured but user specifically requested light mode default focus */
+    --background: #000000;
+    --foreground: #f9fafb;
+    
+    --primary: #ffffff;
+    --primary-foreground: #000000;
+    
+    --secondary: #111827;
+    --secondary-foreground: #9ca3af;
+    
+    --accent: #1f2937;
+    --accent-foreground: #f9fafb;
+    
+    --border: #374151;
+    --ring: #4b5563;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-gray-200 selection:text-black;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-white/80 dark:bg-black/70 backdrop-blur-md border border-gray-200 dark:border-gray-800 shadow-sm;
+  }
+  .sleek-card {
+    @apply bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm transition-all duration-300 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700;
+  }
+}

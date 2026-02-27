@@ -1,3 +1,4 @@
+"use client";
 /**
  * useInView.js
  * ─────────────────────────────────────────────
@@ -98,3 +99,4 @@ export function useCountUp(target, shouldStart, duration = 2000, prefix = '', su
     const formatted = hasDecimal ? count.toFixed(1) : Math.round(count)
     return `${prefix}${formatted}${suffix}`
 }
+

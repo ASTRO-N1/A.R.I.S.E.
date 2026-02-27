@@ -1,3 +1,4 @@
+"use client";
 /**
  * HeroCarousel.jsx
  * ─────────────────────────────────────────────
@@ -213,3 +214,4 @@ export default function HeroCarousel() {
         </section>
     )
 }
+

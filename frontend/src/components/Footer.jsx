@@ -1,3 +1,4 @@
+"use client";
 /**
  * Footer.jsx
  * ─────────────────────────────────────────────
@@ -28,3 +29,4 @@ export default function Footer() {
         </footer>
     )
 }
+

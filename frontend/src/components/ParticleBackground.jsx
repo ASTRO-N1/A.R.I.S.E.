@@ -1,3 +1,4 @@
+"use client";
 /**
  * ParticleBackground.jsx
  * ─────────────────────────────────────────────
@@ -118,3 +119,4 @@ export default function ParticleBackground() {
         </div>
     )
 }
+

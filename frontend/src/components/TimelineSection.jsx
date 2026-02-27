@@ -1,3 +1,4 @@
+"use client";
 /**
  * TimelineSection.jsx
  * ─────────────────────────────────────────────
@@ -68,3 +69,4 @@ export default function TimelineSection() {
         </section>
     )
 }
+

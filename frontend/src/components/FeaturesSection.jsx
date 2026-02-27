@@ -1,3 +1,4 @@
+"use client";
 /**
  * FeaturesSection.jsx
  * ─────────────────────────────────────────────
@@ -100,3 +101,4 @@ export default function FeaturesSection() {
         </section>
     )
 }
+

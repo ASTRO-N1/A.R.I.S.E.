@@ -1,3 +1,4 @@
+"use client";
 /**
  * HeroSection.jsx
  * ─────────────────────────────────────────────
@@ -12,6 +13,7 @@
 
 import GlobeNetwork from './GlobeNetwork'
 import { RocketIcon, PlayIcon } from './icons/Icons'
+import Link from 'next/link'
 
 export default function HeroSection() {
     return (
@@ -42,10 +44,10 @@ export default function HeroSection() {
                     </p>
 
                     <div className="btn-group">
-                        <button className="btn btn--primary" id="btn-launch">
+                        <Link href="/onboarding" className="btn btn--primary" id="btn-launch">
                             <RocketIcon size={18} color="var(--bg-void)" />
                             Launch ARISE
-                        </button>
+                        </Link>
                         <a href="#dashboard" className="btn btn--outline" id="btn-demo">
                             <PlayIcon size={16} />
                             Watch Demo
@@ -61,3 +63,4 @@ export default function HeroSection() {
         </section>
     )
 }
+

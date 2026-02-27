@@ -1,3 +1,4 @@
+"use client";
 /**
  * MetricsSection.jsx
  * ─────────────────────────────────────────────
@@ -83,3 +84,4 @@ export default function MetricsSection() {
         </section>
     )
 }
+

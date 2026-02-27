@@ -1,3 +1,4 @@
+"use client";
 /**
  * CtaSection.jsx
  * ─────────────────────────────────────────────
@@ -7,6 +8,7 @@
 
 import { RocketIcon } from './icons/Icons'
 import { useInView } from '../hooks/useInView'
+import Link from 'next/link'
 
 export default function CtaSection() {
     const [ref, isVisible] = useInView({ threshold: 0.3 })
@@ -29,10 +31,10 @@ export default function CtaSection() {
                         with the power of AI.
                     </p>
                     <div className="btn-group">
-                        <button className="btn btn--primary" id="cta-launch">
+                        <Link href="/onboarding" className="btn btn--primary" id="cta-launch">
                             <RocketIcon size={18} color="var(--bg-void)" />
                             Launch ARISE
-                        </button>
+                        </Link>
                         <a href="#features" className="btn btn--outline" id="cta-learn">
                             Learn More
                         </a>
@@ -42,3 +44,4 @@ export default function CtaSection() {
         </section>
     )
 }
+

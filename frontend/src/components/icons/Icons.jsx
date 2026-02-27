@@ -1,3 +1,4 @@
+"use client";
 /**
  * Icons.jsx
  * ─────────────────────────────────────────────
@@ -150,3 +151,4 @@ export function AlertIcon({ size = 16, color = 'currentColor' }) {
         </svg>
     )
 }
+

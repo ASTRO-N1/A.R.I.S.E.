@@ -1,3 +1,4 @@
+"use client";
 /**
  * GlobeNetwork.jsx
  * ─────────────────────────────────────────────
@@ -165,3 +166,4 @@ export default function GlobeNetwork() {
         </div>
     )
 }
+

@@ -1,3 +1,4 @@
+"use client";
 /**
  * DashboardPreview.jsx
  * ─────────────────────────────────────────────
@@ -204,3 +205,4 @@ export default function DashboardPreview() {
         </section>
     )
 }
+
