@@ -186,17 +186,3 @@ docker run -p 3000:80 arise-frontend
 | Env Mgmt         | python-dotenv / Vite env             |
 | Prod WSGI        | Gunicorn                             |
 | Containerization | Docker (multi-stage builds)          |
-
----
-
-## 👤 Author
-
-**Sneha Rangole**
-
-- GitHub: [github.com/sneha-rangole](https://github.com/sneha-rangole)
-
----
-
-## 📝 License
-
-This project is for personal / educational purposes.
