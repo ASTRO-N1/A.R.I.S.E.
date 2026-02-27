@@ -2,7 +2,7 @@
   "name": "arise-frontend",
   "private": true,
   "version": "1.0.0",
-  "author": "Sneha Rangole (https://github.com/sneha-rangole)",
+  "author": "Neeraj SHimpi",
   "type": "module",
   "scripts": {
     "dev": "vite",
