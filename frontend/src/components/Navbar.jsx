@@ -58,8 +58,9 @@ export default function Navbar({ scrolled }) {
                 </ul>
 
                 {/* Right side: theme toggle + CTA */}
-                <div className="navbar__actions">
+                <div className="navbar__actions flex items-center gap-3">
                     <ThemeToggle />
+                    <Link href="/login" className="text-sm font-medium hover:text-blue-500 transition-colors hidden sm:block">Log In</Link>
                     <Link href="/select-business" className="navbar__cta flex items-center justify-center p-2 rounded-full font-medium" id="nav-cta">Get Started</Link>
                 </div>
             </nav>

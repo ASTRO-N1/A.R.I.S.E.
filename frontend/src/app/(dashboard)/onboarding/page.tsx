@@ -175,7 +175,8 @@ export default function OnboardingChat() {
           businessType: typeNames[businessType || "retail"] || "Business",
           onboardingMode,
           audioBase64,
-          mimeType
+          mimeType,
+          inputType: audioBase64 ? "audio" : "text"
         }),
       });
 
@@ -244,7 +245,7 @@ export default function OnboardingChat() {
                   const { data: { user } } = await supabase.auth.getUser();
                   
                   if (user) {
-                      // Insert Business
+                      // Already authenticated. Insert Business and Inventory.
                       const { data: businessRes, error: bErr } = await supabase
                           .from('businesses')
                           .insert({
@@ -257,7 +258,6 @@ export default function OnboardingChat() {
                       
                       if (bErr) console.error("Business Insert Error:", bErr);
                           
-                      // Insert Inventory
                       if (businessRes && inventoryDataToSave) {
                           const inventoryInserts = inventoryDataToSave.map((item: any) => ({
                               business_id: businessRes.id,
@@ -272,12 +272,15 @@ export default function OnboardingChat() {
                           const { error: iErr } = await supabase.from('inventory').insert(inventoryInserts);
                           if (iErr) console.error("Inventory Insert Error:", iErr);
                       }
+                      router.push("/dashboard");
+                  } else {
+                      // Unauthenticated. Direct them to create an account first.
+                      router.push("/login?redirect=dashboard");
                   }
               } catch (err) {
                   console.error("DB Sync failed inside timeout", err);
+                  router.push("/login");
               }
-              
-              router.push("/dashboard");
           }, 5000);
           return;
       }
@@ -303,24 +306,20 @@ export default function OnboardingChat() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col relative overflow-hidden dark:bg-black transition-colors duration-300">
-      {/* Background glow effects */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
-
+    <div className="min-h-screen bg-transparent flex flex-col relative overflow-hidden transition-colors duration-300">
       {/* Top Navigation / Header */}
       <header className="flex items-center justify-between p-6 w-full max-w-5xl mx-auto z-10 relative">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-black dark:bg-white flex items-center justify-center">
             <Bot className="w-5 h-5 text-white dark:text-black" />
           </div>
-          <span className="font-semibold text-xl tracking-tight text-gray-900 dark:text-white">ARISE Setup</span>
+          <span className="font-semibold text-xl tracking-tight text-slate-900 dark:text-white">ARISE Setup</span>
         </div>
-        <div className="flex items-center gap-4 border border-gray-200 dark:border-gray-800 p-1 pr-4 pl-1 rounded-full bg-white/50 dark:bg-gray-900/50 backdrop-blur-md">
+        <div className="flex items-center gap-4 border border-slate-200/60 dark:border-white/5 p-1 pr-4 pl-1 rounded-full bg-white/50 dark:bg-gray-900/50 backdrop-blur-md">
           <ThemeToggle />
           <button
             onClick={handleGenerateDashboard}
-            className="flex items-center gap-2 text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            className="flex items-center gap-2 text-sm font-medium text-slate-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
           >
             Generate Dashboard
             <ChevronRight className="w-4 h-4" />
@@ -336,8 +335,8 @@ export default function OnboardingChat() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-10"
           >
-            <h2 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white mb-2">Choose your setup mode</h2>
-            <p className="text-gray-500 dark:text-gray-400">Select how you want to configure your ARISE system.</p>
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white mb-2">Choose your setup mode</h2>
+            <p className="text-slate-500 dark:text-gray-400">Select how you want to configure your ARISE system.</p>
           </motion.div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
@@ -346,13 +345,13 @@ export default function OnboardingChat() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
               onClick={() => setOnboardingMode('quick')}
-              className="bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-800 p-8 rounded-3xl shadow-sm hover:shadow-md hover:border-blue-500/30 transition-all cursor-pointer group"
+              className="bg-white dark:bg-[#0a0a0a] border border-slate-200/60 dark:border-white/5 p-8 rounded-3xl shadow-sm hover:shadow-md hover:border-blue-500/30 transition-all cursor-pointer group"
             >
               <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Sparkles className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-3">Quick Setup (Demo)</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+              <h3 className="text-xl font-medium text-slate-900 dark:text-white mb-3">Quick Setup (Demo)</h3>
+              <p className="text-sm text-slate-500 dark:text-gray-400 leading-relaxed">
                 AI will generate comprehensive mock sales history based on your top items. Perfect for exploring the dashboard's capabilities quickly.
               </p>
             </motion.div>
@@ -362,13 +361,13 @@ export default function OnboardingChat() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
               onClick={() => setOnboardingMode('in-depth')}
-              className="bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-800 p-8 rounded-3xl shadow-sm hover:shadow-md hover:border-purple-500/30 transition-all cursor-pointer group"
+              className="bg-white dark:bg-[#0a0a0a] border border-slate-200/60 dark:border-white/5 p-8 rounded-3xl shadow-sm hover:shadow-md hover:border-purple-500/30 transition-all cursor-pointer group"
             >
               <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-900/20 text-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <User className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-3">In-Depth Setup</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+              <h3 className="text-xl font-medium text-slate-900 dark:text-white mb-3">In-Depth Setup</h3>
+              <p className="text-sm text-slate-500 dark:text-gray-400 leading-relaxed">
                 Answer detailed questions to input your exact sales history and supplier metrics. Required for using ARISE with real business data.
               </p>
             </motion.div>
@@ -401,7 +400,7 @@ export default function OnboardingChat() {
                 <div className={`max-w-[80%] px-5 py-3.5 text-[15px] leading-relaxed ${
                   m.sender === "user"
                     ? "bg-black text-white dark:bg-white dark:text-black rounded-2xl rounded-tr-sm"
-                    : "bg-white text-gray-800 dark:bg-[#111] dark:text-gray-200 border border-gray-100 dark:border-gray-800 rounded-2xl rounded-tl-sm shadow-sm"
+                    : "bg-white text-gray-800 dark:bg-[#111] dark:text-gray-200 border border-slate-200/60 dark:border-white/5 rounded-2xl rounded-tl-sm shadow-sm"
                 }`}>
                   {m.text}
                 </div>
@@ -417,7 +416,7 @@ export default function OnboardingChat() {
                 <div className="shrink-0 w-8 h-8 rounded-full bg-black dark:bg-white flex items-center justify-center mt-1">
                   <Bot className="w-5 h-5 text-white dark:text-black" />
                 </div>
-                <div className="bg-white dark:bg-[#111] border border-gray-100 dark:border-gray-800 px-5 py-4 rounded-2xl rounded-tl-sm shadow-sm flex items-center gap-1.5 h-[52px]">
+                <div className="bg-white dark:bg-[#0a0a0a] border border-slate-200/60 dark:border-white/5 px-5 py-4 rounded-2xl rounded-tl-sm shadow-sm flex items-center gap-1.5 h-[52px]">
                   <motion.div
                     className="w-1.5 h-1.5 bg-gray-400 rounded-full"
                     animate={{ y: [0, -4, 0] }}
@@ -451,7 +450,7 @@ export default function OnboardingChat() {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Message ARISE..."
               disabled={isRecording || isTyping}
-              className="w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 rounded-2xl pl-5 pr-24 py-4 focus:outline-none focus:ring-2 focus:ring-black/5 dark:focus:ring-white/10 transition-shadow shadow-sm disabled:opacity-50"
+              className="w-full bg-white dark:bg-[#0a0a0a] border border-slate-200/60 dark:border-white/5 text-slate-900 dark:text-white placeholder:text-gray-400 rounded-2xl pl-5 pr-24 py-4 focus:outline-none focus:ring-2 focus:ring-black/5 dark:focus:ring-white/10 transition-shadow shadow-sm disabled:opacity-50"
               autoFocus
             />
             {/* Microphone Button */}
@@ -462,7 +461,7 @@ export default function OnboardingChat() {
               className={`absolute right-14 p-2.5 rounded-xl transition-colors ${
                 isRecording
                   ? "bg-red-500 text-white animate-pulse"
-                  : "bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-black dark:hover:text-white"
+                  : "bg-slate-100 dark:bg-white/5 text-slate-500 hover:text-black dark:hover:text-white"
               } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               <Mic className="w-4 h-4" />

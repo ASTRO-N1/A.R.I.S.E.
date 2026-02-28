@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --color-background: var(--background);
@@ -21,26 +22,25 @@
 
 @layer base {
   :root {
-    /* Pure white background, hyper-modern minimalist approach */
-    --background: #ffffff;
-    --foreground: #111827; /* gray-900 */
+    /* Premium Soft Light Theme (Off-white) */
+    --background: #f8f9fa;
+    --foreground: #0f172a; 
     
-    /* Vercel/Linear style crisp black/white accents */
-    --primary: #000000;
+    --primary: #0f172a;
     --primary-foreground: #ffffff;
     
-    --secondary: #f9fafb; /* gray-50 */
-    --secondary-foreground: #4b5563; /* gray-600 */
+    --secondary: #ffffff;
+    --secondary-foreground: #475569;
     
-    --accent: #f3f4f6; /* gray-100 */
-    --accent-foreground: #111827;
+    --accent: #f1f5f9;
+    --accent-foreground: #0f172a;
     
-    --border: #e5e7eb; /* gray-200 */
-    --ring: #d1d5db; /* gray-300 */
+    --border: #e2e8f0;
+    --ring: #cbd5e1;
   }
 
   .dark {
-    /* Kept structured but user specifically requested light mode default focus */
+    /* Kept exactly as requested */
     --background: #000000;
     --foreground: #f9fafb;
     
@@ -63,15 +63,15 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased selection:bg-gray-200 selection:text-black;
+    @apply bg-background text-foreground antialiased selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-gray-800 dark:selection:text-white;
   }
 }
 
 @layer utilities {
   .glass-panel {
-    @apply bg-white/80 dark:bg-black/70 backdrop-blur-md border border-gray-200 dark:border-gray-800 shadow-sm;
+    @apply bg-white/70 dark:bg-black/70 backdrop-blur-xl border border-white/20 dark:border-gray-800 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none;
   }
   .sleek-card {
-    @apply bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm transition-all duration-300 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700;
+    @apply bg-white dark:bg-[#0a0a0a] border border-slate-200/60 dark:border-gray-800 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-slate-300 dark:hover:border-gray-700;
   }
 }

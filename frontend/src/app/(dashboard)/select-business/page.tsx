@@ -38,7 +38,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 sm:p-12 relative overflow-hidden bg-white dark:bg-black">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 sm:p-12 relative overflow-hidden bg-transparent transition-colors duration-300">
       {/* Absolute Header with Theme Toggle */}
       <div className="absolute top-6 right-6 sm:top-8 sm:right-8 z-50">
         <ThemeToggle />
@@ -51,10 +51,10 @@ export default function Home() {
         variants={containerVariants}
       >
         <motion.div className="space-y-4" variants={itemVariants}>
-          <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
+          <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-slate-900 dark:text-gray-50">
             Arise
           </h1>
-          <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400 max-w-xl mx-auto font-normal leading-relaxed">
+          <p className="text-base sm:text-lg text-slate-500 dark:text-gray-400 max-w-xl mx-auto font-normal leading-relaxed">
             Select your primary business model to configure your intelligent dashboard environment perfectly.
           </p>
         </motion.div>
@@ -67,13 +67,13 @@ export default function Home() {
                 key={biz.id}
                 variants={itemVariants}
                 onClick={() => handleSelect(biz.id)}
-                className="group relative flex flex-col items-start p-6 bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl hover:border-gray-300 dark:hover:border-gray-700 transition-all duration-300 hover:shadow-sm text-left focus:outline-none focus:ring-1 focus:ring-gray-300 dark:focus:ring-gray-700"
+                className="group relative flex flex-col items-start p-6 bg-white/70 backdrop-blur-md dark:bg-[#0a0a0a]/70 border border-slate-200/60 dark:border-white/5 rounded-2xl hover:bg-white/90 dark:hover:bg-[#111] hover:border-slate-300 dark:hover:border-gray-700 transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-none text-left focus:outline-none focus:ring-1 focus:ring-slate-300 dark:focus:ring-gray-700"
               >
-                <div className="text-gray-700 dark:text-gray-300 mb-4 group-hover:text-black dark:group-hover:text-white transition-colors duration-300">
+                <div className="text-slate-700 dark:text-gray-300 mb-4 group-hover:text-black dark:group-hover:text-white transition-colors duration-300">
                   <Icon className="w-5 h-5 stroke-[1.5]" />
                 </div>
-                <h3 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-1 tracking-tight">{biz.name}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">
+                <h3 className="text-base font-medium text-slate-900 dark:text-gray-100 mb-1 tracking-tight">{biz.name}</h3>
+                <p className="text-sm text-slate-500 dark:text-gray-400 font-normal">
                   {biz.desc}
                 </p>
               </motion.button>
